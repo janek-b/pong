@@ -1,31 +1,56 @@
 // Back-End
-function Field(width, height) {
+function Field(width, height, ctx) {
   this.width = width;
   this.height = height;
+  this.player = new Paddle(this);
+  this.ball = new Ball();
+  this.ctx = ctx
+};
+
+Field.prototype.draw = function() {
+  this.ctx.fillStyle = 'black';
+  this.ctx.fillRect(0, 0, this.width, this.height);
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height)
+  this.ctx.fillRect(this.ball.x, this.ball.y, this.ball.width, this.ball.height)
+}
+
+Field.prototype.movePaddleDown = function() {
+  if (this.player.y + this.player.height > this.height - 5) {
+    this.player.y = this.height - this.player.height;
+  } else {
+    this.player.y += 5;
+  };
+  this.draw();
+};
+
+Field.prototype.movePaddleUp = function() {
+  if (this.player.y < 5) {
+    this.player.y = 0;
+  } else {
+    this.player.y -= 5;
+  };
+  this.draw();
 };
 
 function Paddle(field) {
-  this.height = field.height/5;
   this.width = 10;
+  this.height = field.height/5;
   this.x = 5;
   this.y = field.height/2 - this.height/2;
 };
 
-Paddle.prototype.moveUp = function() {
-  this.y -= 5;
-}
-
-Paddle.prototype.moveDown = function() {
-  this.y += 5;
-}
-
-Paddle.prototype.draw = function(ctx) {
-  ctx.fillRect(this.x, this.y, this.width, this.height);
-}
-
 function Ball() {
-
+  this.width = 10;
+  this.height = 10;
+  this.x = 50;
+  this.y = 50;
+  this.speed = 7;
 };
+
+Ball.prototype.move = function() {
+  this.x = this.x - this.speed;
+}
 
 
 
@@ -36,28 +61,21 @@ $(function() {
   var width = canvas.width;
   var height = canvas.height;
 
-  var field = new Field(width, height);
-  var player1 = new Paddle(field);
+  var field = new Field(width, height, ctx);
+  canvas.addEventListener("mousedown", moveball, false);
 
   document.addEventListener("keydown", function(event) {
     if (event.keyCode === 38) {
-      player1.moveUp();
-      drawGame();
+      field.movePaddleUp();
     } else if (event.keyCode === 40) {
-      player1.moveDown();
-      drawGame();
+      field.movePaddleDown();
     };
   }, false);
 
-
-  function drawGame() {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = 'white';
-    player1.draw(ctx);
+  function moveball() {
+    field.ball.move();
+    field.draw(ctx);
   }
 
-  drawGame();
-  // ctx.fillRect(5, ((height/2) - (player1.height/2)), 10, player1.height);
-  // console.log(player1.getPos(field));
+  field.draw(ctx);
 })
