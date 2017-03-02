@@ -2,3 +2,13 @@ canvas {
   display: block;
   margin: auto;
 }
+
+h1 {
+  text-align: center;
+}
+
+#start {
+  display: block;
+  margin: auto;
+  margin-bottom: 20px;
+}
