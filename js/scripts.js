@@ -4,7 +4,7 @@ function Field(width, height, ctx) {
   this.height = height;
   this.player1 = new Player(this, 5);
   this.player2 = new Player(this, this.width-15)
-  this.ball = new Ball();
+  this.ball = new Ball(this);
   this.ctx = ctx
 };
 
@@ -18,19 +18,19 @@ Field.prototype.draw = function() {
 }
 
 Field.prototype.movePaddleDown = function(player) {
-  if (player.y + player.height > this.height - 5) {
+  if (player.y + player.height > this.height - 4) {
     player.y = this.height - player.height;
   } else {
-    player.y += 10;
+    player.y += 4;
   };
   this.draw();
 };
 
 Field.prototype.movePaddleUp = function(player) {
-  if (player.y < 5) {
+  if (player.y < 4) {
     player.y = 0;
   } else {
-    player.y -= 10;
+    player.y -= 4;
   };
   this.draw();
 };
@@ -90,13 +90,16 @@ Field.prototype.moveBall = function() {
 
 Field.prototype.compTurn = function() {
   if (this.ball.speedX < 0) {
-    var ballMid = this.ball.y + this.ball.height/2;
-    var paddleMid = this.player2.y + this.player2.height/2;
-    if (ballMid + 30 < paddleMid) {
-      this.movePaddleUp(this.player2);
-    } else if (ballMid - 30 > paddleMid) {
-      this.movePaddleDown(this.player2);
-    };
+    if (this.ball.x % 6 === 0) {
+      var ballMid = this.ball.y + this.ball.height/2;
+      var paddleMid = this.player2.y + this.player2.height/2;
+      if (ballMid + 10 < paddleMid) {
+        this.movePaddleUp(this.player2);
+      } else if (ballMid - 10 > paddleMid) {
+        this.movePaddleDown(this.player2);
+      };
+
+    }
   };
 };
 
@@ -108,18 +111,19 @@ function Player(field, x) {
   this.score = 0;
 };
 
-function Ball() {
+function Ball(field) {
+  this.field = field;
   this.width = 10;
   this.height = 10;
-  this.x = 200;
-  this.y = 256/2;
+  this.x = this.field.width/2;
+  this.y = this.field.height/2;
   this.speedX = 1;
   this.speedY = 0;
 };
 
 Ball.prototype.reset = function() {
-  this.x = 200;
-  this.y = 256/2;
+  this.x = this.field.width/2;
+  this.y = this.field.height/2;
   this.speedX = 1;
   this.speedY = 0;
 }
@@ -139,6 +143,16 @@ $(function() {
   var height = canvas.height;
 
   var field = new Field(width, height, ctx);
+  var rect = canvas.getBoundingClientRect();
+
+  document.addEventListener("mousemove", function(event) {
+    var y = event.clientY - rect.top;
+    if (y < field.player1.y + field.player1.height/2) {
+      field.movePaddleUp(field.player1);
+    } else if (y > field.player1.y + field.player1.height/2) {
+      field.movePaddleDown(field.player1);
+    };
+  }, false);
 
   document.addEventListener("keydown", function(event) {
     if (event.keyCode === 38) {
@@ -152,7 +166,7 @@ $(function() {
 
   $("#start").click(function() {
     field.ball.reset();
-    startGame = setInterval(moveball, 10);
+    startGame = setInterval(moveball, 1);
   });
 
   function moveball() {
